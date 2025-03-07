@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Основной фон */
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(circle, #0a0a1a, #000033, #000022);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 60%, rgba(0,0,33,0.8));
+            animation: pulseGlow 4s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Звезды */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: twinkle 2s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .animated-bouquet .glow {
+            animation: glowBreath 3s ease-in-out infinite;
+        }
+
+        @keyframes glowBreath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Вступительный экран */
+        .intro-screen {
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            max-width: 600px;
+            transition: opacity 1s ease;
+        }
+
+        /* Текст */
+        .intro-screen h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 10px rgba(255, 111, 97, 0.5), 0 0 20px rgba(255, 111, 97, 0.5), 0 0 30px rgba(255, 111, 97, 0.5);
+            animation: fadeIn 2s ease-in-out forwards;
+        }
+
+        .intro-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 10px rgba(255, 111, 97, 0.5), 0 0 20px rgba(255, 111, 97, 0.5), 0 0 30px rgba(255, 111, 97, 0.5);
+            animation: fadeIn 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Кнопка */
+        #openBtn {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            background-color: rgba(255, 111, 97, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 111, 97, 0.9);
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeIn 4s ease-in-out forwards;
+            outline: none;
+        }
+
+        #openBtn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(255, 111, 97, 0.5), transparent);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s ease;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        #openBtn:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        #openBtn:hover {
+            background-color: rgba(255, 111, 97, 0.3);
+            box-shadow: 0 0 15px rgba(255, 111, 97, 0.5), 0 0 30px rgba(255, 111, 97, 0.5);
+        }
+
+        #openBtn:active {
+            transform: scale(0.95);
+        }
+
+        #openBtn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Экран с поздравлением */
+        .congrats-screen {
+            display: none;
+            text-align: center;
+            color: white;
+            position: absolute;
+            z-index: 3;
+            padding: 20px;
+            max-width: 600px;
+            animation: fadeIn 1s ease-in-out forwards;
+        }
+        
+        .petal, .particle, .star {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+        }
+
+        .congrats-screen.visible {
+            display: block;
+        }
+
+        .congrats-screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 111, 97, 0.5), 0 0 20px rgba(255, 111, 97, 0.5);
+        }
+
+        .congrats-screen p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* Стили для лепестков */
+        #petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Чтобы лепестки не мешали кликам */
+            overflow: hidden; /* Чтобы лепестки не выходили за пределы экрана */
+            z-index: 1;
+        }
+
+        .petal {
+            position: absolute;
+            height: auto;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-50px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(50vh) translateX(var(--drift)) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) translateX(calc(var(--drift) * 2)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Замена стилей для букета на стили для розы в колбе */
+        .animated-bouquet {
+            position: relative;
+            width: 200px;
+            height: 250px;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            transform: scale(0.8);
+        }
+
+        .animated-bouquet:hover {
+            transform: scale(0.85);
+        }
+
+        .animated-bouquet:active {
+            transform: scale(0.75);
+        }
+
+        /* Стили для розы в колбе */
+        .animated-bouquet .container {
+            width: 100px;
+            height: 300px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            transform: scale(0.6);
+        }
+
+        .animated-bouquet .container div {
+            position: absolute;
+        }
+
+        .animated-bouquet .container .glass {
+            height: 420px;
+            width: 250px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 300px 300px 0px 0px;
+            left: -80px;
+            top: -100px;
+            border-bottom: 15px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .animated-bouquet .container .glass:after {
+            width: 8px;
+            background: rgba(255, 255, 255, 0.28);
+            content: '';
+            position: absolute;
+            height: 80px;
+            top: 430px;
+            border-radius: 100px;
+            left: 10px;
+            top: 180px;
+        }
+
+        .animated-bouquet .container .glass:before {
+            width: 8px;
+            background: rgba(255, 255, 255, 0.28);
+            content: '';
+            position: absolute;
+            height: 15px;
+            top: 430px;
+            border-radius: 100px;
+            left: 10px;
+            top: 280px;
+        }
+
+        .animated-bouquet .container .glow {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            border-radius: 100%;
+            border: 1px solid rgba(245, 148, 184, 0.47);
+            box-shadow: 0px 0px 10px #f594b8;
+            left: -40px;
+            top: -40px;
+            transition: all 0.5s ease;
+            animation: glowing 2.5s ease-in-out infinite;
+        }
+
+        .animated-bouquet .container .rose-petals > div {
+            background: #d52d58;
+            width: 45px;
+            height: 80px;
+            position: absolute;
+            transition: all 0.5s ease-out;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(1) {
+            border-radius: 15px;
+            left: 20px;
+            top: -6px;
+            background: #d52d58;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(2),
+        .animated-bouquet .container .rose-petals > div:nth-child(4),
+        .animated-bouquet .container .rose-petals > div:nth-child(6) {
+            border-radius: 0px 30px 0px 30px;
+            background: #b81b43;
+            left: 0;
+            transform-origin: bottom right;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(3),
+        .animated-bouquet .container .rose-petals > div:nth-child(5),
+        .animated-bouquet .container .rose-petals > div:nth-child(7) {
+            border-radius: 30px 0px 30px 0px;
+            left: 40px;
+            transform-origin: bottom left;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(2) {
+            animation: openRose2 3s ease-in-out;
+            animation-fill-mode: forwards;
+            z-index: 5;
+            background: #9e183a;
+            top: 10px;
+            height: 70px;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(3) {
+            animation: openRose3 3s ease-in-out;
+            animation-fill-mode: forwards;
+            z-index: 4;
+            background: #9e183a;
+            top: 10px;
+            height: 70px;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(4) {
+            animation: openRose4 3s ease-in-out;
+            animation-fill-mode: forwards;
+            z-index: 3;
+            background: #b81b43;
+            top: 5px;
+            height: 75px;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(5) {
+            animation: openRose5 3s ease-in-out;
+            animation-fill-mode: forwards;
+            z-index: 2;
+            background: #b81b43;
+            top: 5px;
+            height: 75px;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(6) {
+            animation: openRose6 3s ease-in-out;
+            animation-fill-mode: forwards;
+            z-index: 1;
+            background: #c9204b;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .rose-petals > div:nth-child(7) {
+            animation: openRose7 3s ease-in-out;
+            animation-fill-mode: forwards;
+            z-index: 0;
+            background: #c9204b;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .rose-leaves > div:nth-last-child(1) {
+            width: 55px;
+            height: 30px;
+            background: #338f37;
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            border-radius: 100px;
+        }
+
+        .animated-bouquet .container .rose-leaves > div:nth-child(1) {
+            width: 6px;
+            height: 230px;
+            border: none;
+            top: 80px;
+            background: #066406;
+            left: 40px;
+        }
+
+        .animated-bouquet .container .thorns > div {
+            width: 30px;
+            height: 30px;
+            background: #066406;
+            top: 100px;
+            left: 10px;
+        }
+
+        .animated-bouquet .container .thorns > div:after {
+            width: 41px;
+            height: 31px;
+            border-radius: 100%;
+            background: #122139;
+            content: "";
+            position: absolute;
+            left: -12px;
+            top: 17px;
+        }
+
+        .animated-bouquet .container .thorns > div:before {
+            width: 41px;
+            height: 31px;
+            border-radius: 100%;
+            background: #122139;
+            content: "";
+            position: absolute;
+            left: -11px;
+            top: -11px;
+            z-index: 0;
+        }
+
+        .animated-bouquet .container .thorns > div:nth-child(2) {
+            top: 150px;
+            transform: rotate(180deg);
+            left: 45px;
+        }
+
+        .animated-bouquet .container .thorns > div:nth-child(3) {
+            top: 180px;
+        }
+
+        .animated-bouquet .container .thorns > div:nth-child(4) {
+            top: 220px;
+            transform: rotate(180deg);
+            left: 45px;
+        }
+
+        .animated-bouquet .container .sparkles {
+            bottom: -40px;
+        }
+
+        .animated-bouquet .container .sparkles > div {
+            width: 4px;
+            height: 4px;
+            border-radius: 100px;
+            background: #ff96c0;
+            box-shadow: 0px 0px 12px 2px #ff4e85;
+            bottom: 0;
+            opacity: 0;
+            animation: sparkle 4s ease-in-out infinite;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(1) {
+            left: 60px;
+            animation-delay: 3s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(2) {
+            left: 158px;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(3) {
+            left: -22px;
+            animation-delay: 1s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(4) {
+            left: 10px;
+            animation-delay: 1s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(5) {
+            left: 177px;
+            animation-delay: 3s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(6) {
+            left: -82px;
+            animation-delay: 2s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(7) {
+            left: 45px;
+            animation-delay: 3s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(8) {
+            left: 74px;
+            animation-delay: 3s;
+        }
+
+        .animated-bouquet .container .sparkles > div:nth-child(9) {
+            left: -79px;
+            animation-delay: 2s;
+        }
+
+        /* Анимации для розы */
+        @keyframes sparkle {
+            50% {
+                opacity: 1;
+            }
+            100% {
+                bottom: 250px;
+            }
+        }
+
+        @keyframes openRose2 {
+            50% {
+                transform: rotate(-90deg);
+                top: 80px;
+                left: 100px;
+            }
+            100% {
+                transform: rotate(-60deg);
+                top: 210px;
+                left: -30px;
+            }
+        }
+
+        @keyframes openRose3 {
+            100% {
+                transform: rotate(60deg);
+            }
+        }
+
+        @keyframes openRose4 {
+            100% {
+                transform: rotate(-30deg);
+            }
+        }
+
+        @keyframes openRose5 {
+            100% {
+                transform: rotate(30deg);
+            }
+        }
+
+        @keyframes openRose6 {
+            50% {
+                transform: rotate(-90deg);
+                top: 80px;
+                left: 100px;
+            }
+            100% {
+                transform: rotate(-60deg);
+                top: 210px;
+                left: -30px;
+            }
+        }
+
+        @keyframes openRose7 {
+            100% {
+                transform: rotate(60deg);
+            }
+        }
+
+        @keyframes glowing {
+            50% {
+                box-shadow: 0px 0px 60px #f594b8;
+            }
+        }
+
+        /* Обновляем стили подсказки */
+        .bouquet-hint {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 15px;
+            animation: pulse 2s infinite;
+            text-align: center;
+        }
+
+        /* Эффект свечения при наведении на букет */
+        .animated-bouquet:hover .flower {
+            box-shadow: 0 0 15px rgba(255, 102, 102, 0.8);
+        }
+
+        /* Контейнер для комплиментов */
+        .compliment-container {
+            position: relative;
+            min-height: 80px;
+            margin-top: 30px;
+        }
+
+        .compliment {
+            font-size: 1.8rem;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 102, 102, 0.5);
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transform: translateY(20px);
+        }
+
+        .compliment.show {
+            animation: showCompliment 4s forwards;
+        }
+
+        @keyframes showCompliment {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            10%, 90% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Частицы при клике на букет */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: particleFade 1s forwards;
+        }
+
+        @keyframes particleFade {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+
+        /* Стили для третьего экрана */
+        .memories-screen {
+            display: none;
+            text-align: center;
+            color: #fff;
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            padding-top: 50px;
+        }
+
+        /* Исправление обрезки медиа */
+        .media-container {
+            width: 280px;
+            height: 280px;
+            margin: 20px auto;
+            border-radius: 50%;
+            border: 3px solid #ff6f61;
+            box-shadow: 0 0 30px rgba(255, 111, 97, 0.4);
+            overflow: hidden; /* Важно! */
+            position: relative;
+            background: #000; /* Фон для видимости контейнера */
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .media-circle {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .media-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 3px #ff6f61;
+            pointer-events: none;
+        }
+
+        .media-circle img,
+        .media-circle video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Обрезаем до круга */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .media-circle.active {
+            opacity: 1;
+        }
+
+        .media-hint {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 15px 0;
+            animation: hintPulse 2s infinite;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .media-comment {
+            font-size: 1.4rem;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 500px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .media-comment.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-btn {
+            background: rgba(255, 111, 97, 0.2);
+            border: 2px solid #ff6f61;
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 111, 97, 0.3);
+            box-shadow: 0 0 15px rgba(255, 111, 97, 0.4);
+        }
+
+        /* Стили для кнопки "Далее" на втором экране */
+        .congrats-screen .nav-btn {
+            margin: 30px auto 0;
+            display: block;
+            width: fit-content;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Скрыть кнопку на третьем экране */
+        .memories-screen .nav-btn {
+            display: none;
+        }
+
+        .media-container video {
+            pointer-events: none; /* Блокировка взаимодействия с нативным плеером */
+        }
+
+        /* Индикатор загрузки */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 34, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 70px;
+            height: 70px;
+            border: 5px solid rgba(255, 111, 97, 0.3);
+            border-top: 5px solid #ff6f61;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Медиа-запрос для мобильных устройств */
+        @media (max-width: 768px) {
+            .intro-screen h1 {
+                font-size: 3rem;
+            }
+
+            .intro-screen h2 {
+                font-size: 1.5rem;
+            }
+
+            #openBtn {
+                padding: 12px 24px;
+                font-size: 1.2rem;
+            }
+
+            .congrats-screen h2 {
+                font-size: 2rem;
+            }
+
+            .congrats-screen p {
+                font-size: 1.2rem;
+            }
+
+            .animated-bouquet {
+                width: 180px;
+                height: 220px;
+            }
+
+            .compliment {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Стили для кнопки управления музыкой */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 111, 97, 0.2);
+            border: 2px solid rgba(255, 111, 97, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .music-control:hover {
+            background: rgba(255, 111, 97, 0.3);
+            box-shadow: 0 0 15px rgba(255, 111, 97, 0.4);
+        }
+
+        .music-control svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* Анимация переходов для медиа */
+        .media-circle {
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: scale(0.9);
+        }
+
+        .media-circle.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Индикатор буферизации для видео */
+        .buffer-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            z-index: 5;
+        }
+
+        .buffering .buffer-indicator {
+            display: block;
+        }
+
+        /* Кнопка возврата */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(255, 111, 97, 0.2);
+            border: 2px solid rgba(255, 111, 97, 0.7);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 111, 97, 0.3);
+            box-shadow: 0 0 15px rgba(255, 111, 97, 0.4);
+        }
+
+        .memories-screen .back-btn {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <!-- Контейнер для звезд -->
+    <div class="stars"></div>
+    
+    <!-- Контейнер для лепестков -->
+    <div id="petals-container"></div>
+    
+    <!-- Кнопка управления музыкой -->
+    <div class="music-control" id="music-btn">
+        <svg viewBox="0 0 24 24" id="music-icon-on">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <svg viewBox="0 0 24 24" id="music-icon-off" style="display: none;">
+            <path d="M4.27 3L3 4.27l9 9v.28c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4v-1.73L19.73 21 21 19.73 4.27 3zM14 7h4V3h-6v5.18l2 2z"/>
+        </svg>
+    </div>
+    
+    <!-- Кнопка возврата -->
+    <div class="back-btn" id="back-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+    </div>
+
+    <!-- Индикатор загрузки -->
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Загрузка ресурсов... ⏳<span id="loading-progress">0%</span></div>
+    </div>
+
+    <!-- Вступительный экран -->
+    <div class="intro-screen" style="display: none;">
+        <h1>С 8 Марта!🌷</h1>
+        <h2>Пупсику от Бога💝</h2>
+        <button id="openBtn"><span>Открыть поздравление</span></button>
+    </div>
+
+    <!-- Экран с поздравлением -->
+    <div class="congrats-screen">
+        <h2>С праздником, пупсик!🌹</h2>
+        <p>C 8 Марта тебя! Пусть весна принесет море улыбок, радости и кучу приятных сюрпризов! Оставайся такой же яркой и весёлой, как ты есть! 💕</p>
+        
+        <!-- Роза в колбе -->
+        <div class="animated-bouquet" id="bouquet-btn">
+            <div class="container">
+                <div class="rose-petals">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="glow"></div>
+                <div class="glass"></div>
+                <div class="thorns">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="rose-leaves">
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="sparkles">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Подсказка для розы -->
+        <div class="bouquet-hint">Нажми на розу, чтобы получить комплимент</div>
+        
+        <!-- Контейнер для комплиментов -->
+        <div class="compliment-container">
+            <div class="compliment" id="compliment"></div>
+        </div>
+        
+        <!-- Кнопка для перехода к следующему экрану -->
+        <button id="nextBtn" class="nav-btn">Далее ➔</button>
+    </div>
+
+    <!-- Экран с воспоминаниями -->
+    <div class="memories-screen">
+        <h2>Внимание, подборка📸</h2>
+        <div class="media-hint">Кликни на кружок, чтобы увидеть больше! ❤️</div>
+        
+        <!-- Контейнер для медиа -->
+        <div class="media-container" id="media-display">
+            <div class="buffer-indicator"></div>
+            <div class="media-circle" id="current-media"></div>
+        </div>
+        
+        <!-- Комментарий к медиа -->
+        <div class="media-comment" id="media-comment"></div>
+    </div>
+
+    <script>
+        // Список комплиментов
+        const compliments = [
+    "Твоя улыбка озаряет мой мир! 🌍",
+    "Ты самая прекрасная и удивительная! 🌟",
+    "Твои глаза — как звезды в ночи! 🌌",
+    "Ты делаешь каждый день особенным! 🎉",
+    "Ты моя муза и вдохновение! 🎨",
+    "Твоя красота затмевает весенние цветы! 🌸",
+    "Ты — моя любимая загадка! 🔮",
+    "С тобой мир становится ярче! ✨",
+    "Твой смех — лучшая мелодия! 🎶",
+    "Ты — самое ценное в моей жизни! 💎",
+    "Ты прекрасна во всех смыслах! 💫",
+    "Твоя душа чиста, как весеннее небо! ☁️",
+    "Ты украшаешь все вокруг своим присутствием! 🌺",
+    "Твои объятия — мой любимый уголок в мире! 🤗",
+    "Ты делаешь невозможное возможным! 🚀",
+    "Ты моя любимая история! 📖",
+    "Ты восхитительна во всем! 🌈",
+    "Твоя нежность покоряет мое сердце! 💖",
+    "Ты моя любимая причина для улыбки! 😊",
+    "Ты как весна — несешь тепло и радость! 🌼"
+];
+
+        // Глобальные переменные
+        let backgroundMusic;
+        let mediaElements = [];
+        let currentMediaIndex = 0;
+        let musicPlaying = false;
+        let allResourcesLoaded = false;
+        let loadingProgress = 0;
+        let isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        // Данные для медиа
+        const mediaData = [
+            {
+                type: 'image',
+                src: 'images/photo1.jpg',
+                comment: 'Ай ну красатулька 🌸'
+            },
+            {
+                type: 'video',
+                src: 'images/video1.mp4',
+                comment: 'Глазки, хлоп-хлоп❤️)',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo2.jpg',
+                comment: 'Красота в любом виде🌷'
+            },
+            {
+                type: 'video',
+                src: 'images/video2.mp4',
+                comment: 'Учение во всем <3',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo3.jpg',
+                comment: 'Немного ЧСВ, но эт хорошо😈'
+            },
+            {
+                type: 'video',
+                src: 'images/video3.mp4',
+                comment: 'Носок зачет 🧦',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo4.jpg',
+                comment: 'Ась? Шо смотришь? '
+            },
+            {
+                type: 'video',
+                src: 'images/video4.mp4',
+                comment: 'Плавать не умею, но я поплыл🏊🏻‍♀️',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo5.jpg',
+                comment: 'Эшкаре? чиназес? хеви метал?🤘'
+            },
+            {
+                type: 'video',
+                src: 'images/video5.mp4',
+                comment: '-Нос? -какой нос? -Челка? -какая челка? ты прекрастна✨',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo6.jpg',
+                comment: 'Теплые и приятные слова греют душу. Жалко что редко, но за-то метко🥰'
+            },
+            {
+                type: 'video',
+                src: 'images/video6.mp4',
+                comment: 'Папам, папам, пам. За-то весело🪑;)',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo7.jpg',
+                comment: 'Моя любимая💖'
+            },
+            {
+                type: 'video',
+                src: 'images/video7.mp4',
+                comment: 'Ну, если запреты, то только такие)👮‍',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo8.jpg',
+                comment: 'Пикачу, я выбираю тебя. виу-виу, бам-бам. Вот так появилась ты'
+            },
+            {
+                type: 'video',
+                src: 'images/video8.mp4',
+                comment: 'А я считаюсь олдом?👴🏻)',
+                muted: false
+            },
+            {
+                type: 'image',
+                src: 'images/photo9.jpg',
+                comment: 'Эстетик? неее, я знаю что ты любишь пиво и рыбку🍺'
+            },
+            {
+                type: 'video',
+                src: 'images/video9.mp4',
+                comment: 'Теперь я знаю что это, ЛИПСИНК, , нэ помню💃',
+                muted: false
+            }
+        ];
+
+        // Инициализация при загрузке DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Запускаем предзагрузку сразу при открытии страницы
+            createStars();
+            
+            // Начинаем загрузку всех ресурсов
+            preloadAllResources().then(() => {
+                hideLoadingIndicator();
+                document.querySelector('.intro-screen').style.display = 'block';
+            });
+            
+            // Инициализация событий
+            initEvents();
+            
+            // Инициализация аудио
+            initializeAudio();
+            
+            // Начальные лепестки
+            setInterval(createPetal, 1500);
+        });
+
+        // Инициализация событий
+        function initEvents() {
+            const openBtn = document.getElementById('openBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const bouquetBtn = document.getElementById('bouquet-btn');
+            const mediaDisplay = document.getElementById('media-display');
+            const musicBtn = document.getElementById('music-btn');
+            const backBtn = document.getElementById('back-btn');
+            
+            // Обработчик для открытия поздравления
+            if (openBtn) {
+                openBtn.addEventListener('click', showCongratsScreen);
+            }
+            
+            // Обработчик для розы
+            if (bouquetBtn) {
+                bouquetBtn.addEventListener('click', function(e) {
+                    createParticles(e.clientX, e.clientY);
+                    for (let i = 0; i < 10; i++) setTimeout(createPetal, i * 100);
+                    showRandomCompliment();
+                });
+            }
+            
+            // Переход на экран воспоминаний
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    document.querySelector('.congrats-screen').classList.remove('visible');
+                    document.querySelector('.memories-screen').style.display = 'block';
+                    if (allResourcesLoaded) {
+                        showCurrentMedia();
+                    }
+                });
+            }
+            
+            // Обработчик для просмотра медиа
+            if (mediaDisplay) {
+                mediaDisplay.addEventListener('click', function(e) {
+                    e.preventDefault(); // Блокировка стандартных действий
+                    
+                    // Плавное скрытие текущего медиа
+                    const currentMedia = document.getElementById('current-media');
+                    currentMedia.classList.remove('active');
+                    
+                    // Изменение индекса и показ нового медиа с задержкой
+                    setTimeout(() => {
+                        currentMediaIndex = (currentMediaIndex + 1) % mediaData.length;
+                        showCurrentMedia();
+                    }, 300);
+                });
+            }
+            
+            // Обработчик кнопки музыки
+            if (musicBtn) {
+                musicBtn.addEventListener('click', toggleMusic);
+            }
+            
+            // Обработчик кнопки возврата
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    document.querySelector('.memories-screen').style.display = 'none';
+                    document.querySelector('.congrats-screen').classList.add('visible');
+                    
+                    // Остановка текущего видео
+                    const currentVideo = document.querySelector('.media-circle video');
+                    if (currentVideo) {
+                        currentVideo.pause();
+                    }
+                    
+                    // Восстановление громкости фоновой музыки
+                    if (backgroundMusic && musicPlaying) {
+                        backgroundMusic.volume = 0.7;
+                    }
+                });
+            }
+            
+            // Эффект параллакса для звезд
+            document.addEventListener('mousemove', (e) => {
+                const stars = document.querySelector('.stars');
+                if (stars) {
+                    const x = e.clientX / window.innerWidth * 10;
+                    const y = e.clientY / window.innerHeight * 10;
+                    stars.style.transform = `translate(${x}px, ${y}px)`;
+                }
+            });
+        }
+
+        // Инициализация аудио
+        function initializeAudio() {
+            backgroundMusic = new Audio('images/audio.mp3');
+            backgroundMusic.loop = true;
+            backgroundMusic.volume = 0;  // Начальная громкость 0
+            backgroundMusic.preload = 'auto';
+            
+            // Загружаем аудио заранее
+            backgroundMusic.load();
+            
+            // Пытаемся запустить воспроизведение по взаимодействию с документом
+            const startAudio = function() {
+                // Только если пользователь включил музыку через кнопку
+                if (musicPlaying) {
+                    fadeInAudio();
+                }
+                document.removeEventListener('click', startAudio);
+                document.removeEventListener('touchstart', startAudio);
+            };
+            
+            document.addEventListener('click', startAudio);
+            document.addEventListener('touchstart', startAudio);
+        }
+
+        // Переключение музыки
+        function toggleMusic() {
+            const iconOn = document.getElementById('music-icon-on');
+            const iconOff = document.getElementById('music-icon-off');
+            
+            if (musicPlaying) {
+                // Выключаем музыку
+                fadeOutAudio();
+                musicPlaying = false;
+                iconOn.style.display = 'none';
+                iconOff.style.display = 'block';
+            } else {
+                // Включаем музыку
+                musicPlaying = true;
+                iconOn.style.display = 'block';
+                iconOff.style.display = 'none';
+                
+                // Запускаем музыку, если она еще не играет
+                if (backgroundMusic.paused) {
+                    try {
+                        backgroundMusic.play().then(() => {
+                            fadeInAudio();
+                        }).catch(err => {
+                            console.log('Ошибка воспроизведения:', err);
+                            // Для iOS устройств требуется явное взаимодействие
+                            if (isIOSDevice) {
+                                alert('Для включения музыки нажмите на экран');
+                            }
+                        });
+                    } catch (e) {
+                        console.log('Ошибка воспроизведения:', e);
+                    }
+                } else {
+                    fadeInAudio();
+                }
+            }
+        }
+
+        // Плавное увеличение громкости
+        function fadeInAudio() {
+            if (!backgroundMusic) return;
+            
+            backgroundMusic.volume = 0;
+            const fadeInterval = setInterval(() => {
+                if (backgroundMusic.volume < 0.6) {
+                    backgroundMusic.volume += 0.1;
+                } else {
+                    backgroundMusic.volume = 0.7;
+                    clearInterval(fadeInterval);
+                }
+            }, 100);
+        }
+
+        // Плавное уменьшение громкости
+        function fadeOutAudio() {
+            if (!backgroundMusic) return;
+            
+            const fadeInterval = setInterval(() => {
+                if (backgroundMusic.volume > 0.1) {
+                    backgroundMusic.volume -= 0.1;
+                } else {
+                    backgroundMusic.volume = 0;
+                    backgroundMusic.pause();
+                    clearInterval(fadeInterval);
+                }
+            }, 100);
+        }
+
+        // Показать экран поздравления
+        function showCongratsScreen() {
+            document.querySelector('.intro-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.querySelector('.intro-screen').style.display = 'none';
+                document.querySelector('.congrats-screen').classList.add('visible');
+                document.getElementById('nextBtn').style.display = 'block';
+                
+                // Увеличиваем интенсивность лепестков
+                setInterval(createPetal, 600);
+            }, 1000);
+        }
+
+        // Функция для предзагрузки всех ресурсов
+        function preloadAllResources() {
+            return new Promise((resolve) => {
+                const totalResources = mediaData.length + 1; // +1 для аудио
+                let loadedResources = 0;
+                
+                // Предзагрузка аудио
+                backgroundMusic = new Audio('images/audio.mp3');
+                backgroundMusic.preload = 'auto';
+                
+                backgroundMusic.addEventListener('canplaythrough', function onCanPlay() {
+                    loadedResources++;
+                    updateLoadingProgress(loadedResources, totalResources);
+                    backgroundMusic.removeEventListener('canplaythrough', onCanPlay);
+                    
+                    if (loadedResources === totalResources) {
+                        allResourcesLoaded = true;
+                        resolve();
+                    }
+                }, { once: true });
+                
+                backgroundMusic.addEventListener('error', () => {
+                    console.error("Ошибка загрузки аудио");
+                    loadedResources++;
+                    updateLoadingProgress(loadedResources, totalResources);
+                    
+                    if (loadedResources === totalResources) {
+                        allResourcesLoaded = true;
+                        resolve();
+                    }
+                });
+                
+                // Принудительная загрузка аудио
+                backgroundMusic.load();
+                
+                // Предзагрузка медиа-элементов
+                mediaData.forEach((item, index) => {
+                    if (item.type === 'image') {
+                        const img = new Image();
+                        img.src = item.src;
+                        img.onload = () => {
+                            mediaElements[index] = img;
+                            loadedResources++;
+                            updateLoadingProgress(loadedResources, totalResources);
+                            
+                            if (loadedResources === totalResources) {
+                                allResourcesLoaded = true;
+                                resolve();
+                            }
+                        };
+                        img.onerror = () => {
+                            console.error("Ошибка загрузки изображения:", item.src);
+                            loadedResources++;
+                            updateLoadingProgress(loadedResources, totalResources);
+                            
+                            if (loadedResources === totalResources) {
+                                allResourcesLoaded = true;
+                                resolve();
+                            }
+                        };
+                    } else if (item.type === 'video') {
+                        const video = document.createElement('video');
+                        video.src = item.src;
+                        video.muted = true; // Изначально видео без звука для загрузки
+                        video.preload = 'auto';
+                        
+                        // Исправляем кроссбраузерную совместимость
+                        video.setAttribute('playsinline', '');
+                        video.setAttribute('webkit-playsinline', '');
+                        
+                        // Событие при возможности воспроизведения
+                        video.addEventListener('canplaythrough', function onCanPlay() {
+                            mediaElements[index] = video;
+                            loadedResources++;
+                            updateLoadingProgress(loadedResources, totalResources);
+                            video.removeEventListener('canplaythrough', onCanPlay);
+                            
+                            if (loadedResources === totalResources) {
+                                allResourcesLoaded = true;
+                                resolve();
+                            }
+                        }, { once: true });
+                        
+                        video.addEventListener('error', () => {
+                            console.error("Ошибка загрузки видео:", item.src);
+                            loadedResources++;
+                            updateLoadingProgress(loadedResources, totalResources);
+                            
+                            if (loadedResources === totalResources) {
+                                allResourcesLoaded = true;
+                                resolve();
+                            }
+                        });
+                        
+                        // Принудительная загрузка
+                        video.load();
+                    }
+                });
+                
+                // Таймаут для предотвращения зависания на экране загрузки
+                setTimeout(() => {
+                    if (!allResourcesLoaded) {
+                        console.warn('Некоторые ресурсы не загрузились вовремя, продолжаем работу');
+                        allResourcesLoaded = true;
+                        resolve();
+                    }
+                }, 20000); // 20 секунд максимум на загрузку
+            });
+        }
+
+        // Обновление прогресса загрузки
+        function updateLoadingProgress(loaded, total) {
+            loadingProgress = Math.floor((loaded / total) * 100);
+            const progressElement = document.getElementById('loading-progress');
+            if (progressElement) {
+                progressElement.textContent = `${loadingProgress}%`;
+            }
+        }
+
+        // Скрыть индикатор загрузки
+        function hideLoadingIndicator() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    if (overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
+                    }
+                }, 500);
+            }
+        }
+
+        // Создаем звезды
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            if (!starsContainer) return;
+            
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Функция создания частиц при клике
+        function createParticles(x, y) {
+            const container = document.body;
+            const count = 30; // Количество частиц
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                // Случайный размер частицы (от 5px до 10px)
+                const size = Math.random() * 8 + 4;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+
+                // Случайный цвет частицы (оттенки розового и красного)
+                const hue = Math.floor(Math.random() * 40) + 340; // от 340 до 380 (20) по шкале HSL
+                const saturation = Math.floor(Math.random() * 30) + 70; // от 70% до 100%
+                const lightness = Math.floor(Math.random() * 20) + 60; // от 60% до 80%
+                particle.style.backgroundColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+                // Размещаем частицу в месте клика
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+
+                // Задаем случайное направление и расстояние движения
+                const tx = (Math.random() - 0.5) * 200; // Смещение по X (-100px до 100px)
+                const ty = (Math.random() - 0.5) * 200; // Смещение по Y (-100px до 100px)
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+
+                // Добавляем частицу на страницу
+                container.appendChild(particle);
+
+                // Удаляем частицу после завершения анимации
+                particle.addEventListener('animationend', () => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                });
+            }
+        }
+
+        // Функция для создания лепестка
+        function createPetal() {
+            const petal = document.createElement('img');
+            // Используем data URI вместо файла для надежности
+            petal.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><path d="M15 0 C20 10 25 15 15 30 C5 15 10 10 15 0" fill="%23ff6f61" opacity="0.7"/></svg>';
+            petal.classList.add('petal');
+
+            // Случайный размер лепестка (от 20px до 50px)
+            const size = Math.floor(Math.random() * 30) + 20;
+            petal.style.width = `${size}px`;
+
+            // Случайная начальная позиция по X (в пределах ширины экрана)
+            const x = Math.random() * window.innerWidth;
+            petal.style.left = `${x}px`;
+
+            // Начальная позиция по Y (над верхней границей экрана)
+            petal.style.top = `-50px`;
+
+            // Случайное направление вращения (влево или вправо)
+            const rotationDirection = Math.random() > 0.5 ? 1 : -1;
+            const rotationSpeed = Math.random() * 360; // Случайная скорость вращения
+
+            // Случайное отклонение по горизонтали
+            const horizontalDrift = (Math.random() - 0.5) * 200; // Отклонение от -100px до 100px
+
+            // Добавляем лепесток в контейнер
+            const petalsContainer = document.getElementById('petals-container');
+            if (petalsContainer) {
+                petalsContainer.appendChild(petal);
+            }
+
+            // Анимация падения
+            const animationDuration = Math.random() * 3 + 2; // Случайная длительность падения (2-5 секунд)
+            petal.style.animation = `fall ${animationDuration}s linear forwards`;
+
+            // Управление отклонением по горизонтали
+            petal.style.setProperty('--drift', `${horizontalDrift}px`);
+
+            // Удаляем лепесток после завершения анимации
+            petal.addEventListener('animationend', () => {
+                if (petal.parentNode) {
+                    petal.parentNode.removeChild(petal);
+                }
+            });
+
+            // Вращение лепестка
+            let rotation = 0;
+            let animationActive = true;
+            
+            const rotatePetal = () => {
+                if (!animationActive) return;
+                
+                rotation += rotationSpeed * rotationDirection * 0.01;
+                petal.style.transform = `rotate(${rotation}deg)`;
+                
+                if (animationActive) {
+                    requestAnimationFrame(rotatePetal);
+                }
+            };
+            
+            requestAnimationFrame(rotatePetal);
+            
+            // Остановка анимации при удалении элемента
+            petal.addEventListener('animationend', () => {
+                animationActive = false;
+            });
+        }
+
+        // Функция для показа случайного комплимента
+        function showRandomCompliment() {
+            const complimentElement = document.getElementById('compliment');
+            if (!complimentElement) return;
+
+            // Удаляем класс показа, если он есть
+            complimentElement.classList.remove('show');
+
+            // Ожидаем, пока анимация исчезновения завершится
+            setTimeout(() => {
+                // Выбираем случайный комплимент
+                const randomIndex = Math.floor(Math.random() * compliments.length);
+                complimentElement.textContent = compliments[randomIndex];
+
+                // Добавляем класс для показа комплимента
+                complimentElement.classList.add('show');
+            }, 100); // Короткая задержка для сброса анимации
+        }
+
+        // Показать текущее медиа
+        function showCurrentMedia() {
+            if (!allResourcesLoaded) return;
+            
+            const mediaContainer = document.getElementById('current-media');
+            if (!mediaContainer) return;
+            
+            // Показываем индикатор буферизации
+            const mediaDisplay = document.getElementById('media-display');
+            if (mediaDisplay) {
+                mediaDisplay.classList.add('buffering');
+            }
+            
+            // Очищаем контейнер
+            mediaContainer.innerHTML = '';
+            
+            // Если предыдущее медиа было видео, останавливаем его
+            const previousVideo = document.querySelector('.media-circle video');
+            if (previousVideo) {
+                previousVideo.pause();
+            }
+            
+            // Создаем новый элемент медиа
+            const currentItem = mediaData[currentMediaIndex];
+            
+            if (currentItem.type === 'image') {
+                // Создаем изображение
+                const img = new Image();
+                img.src = currentItem.src;
+                img.onload = () => {
+                    // Убираем индикатор буферизации
+                    if (mediaDisplay) {
+                        mediaDisplay.classList.remove('buffering');
+                    }
+                    
+                    // Показываем изображение с анимацией
+                    setTimeout(() => {
+                        mediaContainer.classList.add('active');
+                    }, 50);
+                    
+                    // Возвращаем громкость фоновой музыки
+                    if (backgroundMusic && musicPlaying && backgroundMusic.volume < 0.7) {
+                        const fadeInAudio = setInterval(() => {
+                            if (backgroundMusic.volume < 0.6) {
+                                backgroundMusic.volume += 0.1;
+                            } else {
+                                backgroundMusic.volume = 0.7;
+                                clearInterval(fadeInAudio);
+                            }
+                        }, 100);
+                    }
+                };
+                
+                // Добавляем изображение в контейнер
+                mediaContainer.appendChild(img);
+            } else if (currentItem.type === 'video') {
+                // Создаем видео
+                const video = document.createElement('video');
+                video.src = currentItem.src;
+                video.muted = false;
+                video.loop = true;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                
+                // Обработчики событий для видео
+                video.addEventListener('loadeddata', () => {
+                    // Убираем индикатор буферизации
+                    if (mediaDisplay) {
+                        mediaDisplay.classList.remove('buffering');
+                    }
+                    
+                    // Показываем видео с анимацией
+                    setTimeout(() => {
+                        mediaContainer.classList.add('active');
+                    }, 50);
+                });
+                
+                video.addEventListener('playing', () => {
+                    // Приглушаем фоновую музыку
+                    if (backgroundMusic && musicPlaying && backgroundMusic.volume > 0.1) {
+                        const fadeAudio = setInterval(() => {
+                            if (backgroundMusic.volume > 0.1) {
+                                backgroundMusic.volume -= 0.1;
+                            } else {
+                                backgroundMusic.volume = 0.1;
+                                clearInterval(fadeAudio);
+                            }
+                        }, 100);
+                    }
+                });
+                
+                video.addEventListener('error', (e) => {
+                    console.error('Ошибка загрузки видео:', e);
+                    if (mediaDisplay) {
+                        mediaDisplay.classList.remove('buffering');
+                    }
+                    
+                    // Показываем сообщение об ошибке
+                    const errorMsg = document.createElement('div');
+                    errorMsg.textContent = 'Ошибка загрузки видео';
+                    errorMsg.style.color = 'white';
+                    errorMsg.style.position = 'absolute';
+                    errorMsg.style.top = '50%';
+                    errorMsg.style.left = '50%';
+                    errorMsg.style.transform = 'translate(-50%, -50%)';
+                    mediaContainer.appendChild(errorMsg);
+                    
+                    setTimeout(() => {
+                        mediaContainer.classList.add('active');
+                    }, 50);
+                });
+                
+                // Добавляем видео в контейнер
+                mediaContainer.appendChild(video);
+                
+                // Начинаем воспроизведение видео
+                try {
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log('Ошибка автовоспроизведения:', error);
+                            
+                            // На мобильных устройствах может потребоваться взаимодействие пользователя
+                            const playButton = document.createElement('div');
+                            playButton.innerHTML = '&#9658;'; // Unicode символ "Play"
+                            playButton.style.position = 'absolute';
+                            playButton.style.top = '50%';
+                            playButton.style.left = '50%';
+                            playButton.style.transform = 'translate(-50%, -50%)';
+                            playButton.style.color = 'white';
+                            playButton.style.fontSize = '3rem';
+                            playButton.style.cursor = 'pointer';
+                            playButton.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                            playButton.style.width = '60px';
+                            playButton.style.height = '60px';
+                            playButton.style.borderRadius = '50%';
+                            playButton.style.display = 'flex';
+                            playButton.style.justifyContent = 'center';
+                            playButton.style.alignItems = 'center';
+                            
+                            playButton.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                video.play().catch(err => console.log('Все еще не можем воспроизвести:', err));
+                                playButton.remove();
+                            });
+                            
+                            mediaContainer.appendChild(playButton);
+                            
+                            if (mediaDisplay) {
+                                mediaDisplay.classList.remove('buffering');
+                            }
+                            
+                            setTimeout(() => {
+                                mediaContainer.classList.add('active');
+                            }, 50);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Ошибка при запуске видео:', e);
+                }
+            }
+            
+            // Анимация комментария
+            const comment = document.getElementById('media-comment');
+            if (comment) {
+                comment.classList.remove('show');
+                setTimeout(() => {
+                    comment.textContent = currentItem.comment;
+                    comment.classList.add('show');
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
